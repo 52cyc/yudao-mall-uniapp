@@ -1,88 +1,284 @@
-<!-- 首页，支持店铺装修 -->
 <template>
-	<view v-if="template">
-		<s-layout title="首页" navbar="custom" tabbar="/pages/index/index" :bgStyle="template.page"
-			:navbarStyle="template.navigationBar" onShareAppMessage>
-			<s-block v-for="(item, index) in template.components" :key="index" :styles="item.property.style">
-				<s-block-item :type="item.id" :data="item.property" :styles="item.property.style" />
-			</s-block>
-		</s-layout>
-	</view>
+  <view class="page">
+    <!-- 顶部标题栏 -->
+    <view class="header">
+      <text class="title">首页</text>
+    </view>
+    
+    <!-- 主要内容区 -->
+    <view class="content">
+      <!-- 标语 -->
+      <view class="slogan">
+        <text class="slogan-text">想说的话</text>
+        <text class="slogan-text">我帮你送达</text>
+      </view>
+      
+      <!-- 功能按钮区 -->
+      <view class="function-area">
+        <!-- 写信按钮 -->
+        <view class="write-letter-box">
+          <view class="write-letter">
+            <text class="write-letter-title">写一封信</text>
+            <text class="write-letter-subtitle">悄悄送给TA</text>
+            <view class="write-letter-btn" @click="startWriteLetter">
+              <text>开始写信</text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 右侧按钮组 -->
+        <view class="right-buttons">
+          <view class="verify-code" @click="verifyCode">
+            <text>验证码收信</text>
+          </view>
+          <view class="personal-center" @click="goToPersonalCenter">
+            <text>个人中心</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 广告区域 -->
+      <view class="ad-area">
+        <view class="ad-item">
+          <!-- 广告内容 -->
+        </view>
+      </view>
+    </view>
+
+    <!-- 验证码弹窗 -->
+    <uni-popup ref="popup" type="center">
+      <view class="verify-popup">
+        <view class="verify-title">验证码收信</view>
+        <input 
+          class="verify-input" 
+          type="text" 
+          v-model="verifyCodeInput"
+          placeholder="请输入取件码"
+          maxlength="5"
+        />
+        <view class="verify-btn" @click="submitVerifyCode">确定</view>
+      </view>
+    </uni-popup>
+  </view>
 </template>
 
 <script setup>
-	import {
-		computed
-	} from 'vue';
-	import {
-		onLoad,
-		onPageScroll,
-		onPullDownRefresh
-	} from '@dcloudio/uni-app';
-	import sheep from '@/sheep';
-	import $share from '@/sheep/platform/share';
-	// 隐藏原生tabBar
-	uni.hideTabBar();
+import { onMounted, ref } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
+const popup = ref(null);
 
-	const template = computed(() => sheep.$store('app').template?.home);
-	// 在此处拦截改变一下首页轮播图 此处先写死后期复活 放到启动函数里
-	// (async function() {
-		// console.log('原代码首页定制化数据',template)
-		// let {
-		// 	data
-		// } = await index2Api.decorate();
-		// console.log('首页导航配置化过高无法兼容',JSON.parse(data[1].value))
-		// 改变首页底部数据 但是没有通过数组id获取商品数据接口
-		// let {
-		// 	data: datas
-		// } = await index2Api.spids();
-		// template.value.data[9].data.goodsIds = datas.list.map(item => item.id);
-		// template.value.data[0].data.list = JSON.parse(data[0].value).map(item => {
-		// 	return {
-		// 		src: item.picUrl,
-		// 		url: item.url,
-		// 		title: item.name,
-		// 		type: "image"
-		// 	}
-		// })
-	// }())
+const verifyCodeInput = ref('');
 
+onMounted(() => {
+  console.log(popup.value); // 检查是否绑定成功
+});
 
-	onLoad((options) => {
-		// #ifdef MP
-		// 小程序识别二维码
-		if (options.scene) {
-			const sceneParams = decodeURIComponent(options.scene).split('=');
-      console.log("sceneParams=>",sceneParams);
-			options[sceneParams[0]] = sceneParams[1];
-		}
-		// #endif
+// 开始写信
+const startWriteLetter = () => {
+  uni.navigateTo({
+    url: '/pages/index/write-letter'
+  });
+};
 
-		// 预览模板
-		if (options.templateId) {
-			sheep.$store('app').init(options.templateId);
-		}
+// 验证码收信
+const verifyCode = () => {
+  console.log('验证码收信');
+  if (popup.value) {
+    popup.value.open();
+  } else {
+    uni.showToast({
+      title: '组件初始化失败',
+      icon: 'none'
+    });
+  }
+};
 
-		// 解析分享信息
-		if (options.spm) {
-			$share.decryptSpm(options.spm);
-		}
+// 提交验证码
+const submitVerifyCode = () => {
+  if (!verifyCodeInput.value) {
+    uni.showToast({
+      title: '请输入验证码',
+      icon: 'none'
+    });
+    return;
+  }
+  
+  if (verifyCodeInput.value.length !== 5) {
+    uni.showToast({
+      title: '验证码格式错误',
+      icon: 'none'
+    });
+    return;
+  }
+  
+  // TODO: 调用验证码验证接口
+  console.log('验证码:', verifyCodeInput.value);
+  popup.value.close();
+  verifyCodeInput.value = '';
+  
+  // 跳转到信件详情页
+  uni.navigateTo({
+    url: `/pages/index/letter-detail?code=${verifyCodeInput.value}`
+  });
+};
 
-		// 进入指定页面(完整页面路径)
-		if (options.page) {
-			sheep.$router.go(decodeURIComponent(options.page));
-		}
-	});
+// 跳转到个人中心
+const goToPersonalCenter = () => {
+  uni.navigateTo({
+    url: '/pages/index/personal-center'
+  });
+};
 
-	// 下拉刷新
-	onPullDownRefresh(() => {
-		sheep.$store('app').init();
-		setTimeout(function() {
-			uni.stopPullDownRefresh();
-		}, 800);
-	});
-
-	onPageScroll(() => {});
+onLoad(() => {
+  // 页面加载时的逻辑
+});
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+.page {
+  min-height: 100vh;
+  background-color: #fff;
+}
+
+.header {
+  padding: 44px 20px 20px;
+  text-align: center;
+  
+  .title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+}
+
+.content {
+  padding: 20px;
+}
+
+.slogan {
+  margin-bottom: 30px;
+  
+  .slogan-text {
+    display: block;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1.5;
+  }
+}
+
+.function-area {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.write-letter-box {
+  flex: 1;
+}
+
+.write-letter {
+  background-color: #00C853;
+  border-radius: 20px;
+  padding: 30px 20px;
+  height: 200px;
+  color: #fff;
+  
+  .write-letter-title {
+    font-size: 24px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .write-letter-subtitle {
+    font-size: 16px;
+    opacity: 0.8;
+    display: block;
+    margin-bottom: 30px;
+  }
+  
+  .write-letter-btn {
+    background-color: #fff;
+    border-radius: 25px;
+    padding: 12px 30px;
+    display: inline-block;
+    
+    text {
+      color: #00C853;
+      font-size: 16px;
+      font-weight: bold;
+    }
+  }
+}
+
+.right-buttons {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  
+  .verify-code, .personal-center {
+    flex: 1;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+  }
+  
+  .verify-code {
+    background-color: #FF4081;
+  }
+  
+  .personal-center {
+    background-color: #FFA000;
+  }
+}
+
+.ad-area {
+  margin-top: 20px;
+  
+  .ad-item {
+    background-color: #f5f5f5;
+    border-radius: 20px;
+    height: 200px;
+    // 广告样式
+  }
+}
+
+.verify-popup {
+  background-color: #fff;
+  border-radius: 16px;
+  width: 280px;
+  padding: 24px;
+  
+  .verify-title {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .verify-input {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .verify-btn {
+    background-color: #00C853;
+    color: #fff;
+    height: 44px;
+    line-height: 44px;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
+</style>
