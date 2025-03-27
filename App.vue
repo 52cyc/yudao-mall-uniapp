@@ -3,11 +3,6 @@
   import { ShoproInit } from './sheep';
 
   onLaunch(() => {
-    // 延时隐藏原生导航栏
-    setTimeout(() => {
-      uni.hideTabBar();
-    }, 200);
-
     // 加载Shopro底层依赖
     ShoproInit();
   });

@@ -1,11 +1,4 @@
 {
-	"easycom": {
-		"autoscan": true,
-		"custom": {
-			"^s-(.*)": "@/sheep/components/s-$1/s-$1.vue",
-			"^su-(.*)": "@/sheep/ui/su-$1/su-$1.vue"
-		}
-	},
 	"pages": [{
 		"path": "pages/index/index",
 		"aliasPath": "/",
@@ -18,34 +11,6 @@
 			"sync": true,
 			"title": "首页",
 			"group": "商城"
-		}
-	},
-	{
-		"path": "pages/index/write-letter",
-		"style": {
-			"navigationBarTitleText": "写一封信",
-			"navigationStyle": "custom"
-		}
-	},
-	{
-		"path": "pages/index/letter-detail",
-		"style": {
-			"navigationBarTitleText": "信件详情",
-			"navigationStyle": "custom"
-		}
-	},
-	{
-		"path": "pages/index/sms-notify",
-		"style": {
-			"navigationBarTitleText": "短信通知",
-			"navigationStyle": "custom"
-		}
-	},
-	{
-		"path": "pages/index/personal-center",
-		"style": {
-			"navigationBarTitleText": "个人中心",
-			"navigationStyle": "custom"
 		}
 	}]
 }
